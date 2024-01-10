@@ -9,17 +9,20 @@ import csv
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import mplhep as hep
 from fpdf import FPDF
 from datetime import datetime
 from fpdf.enums import XPos, YPos
 
 "Edit this part of the acode according to the location of your QC2 files"
 "---------------------------------------------------------------------------"
-data_folder='QC2_results/data_GE21_foils_20231001'
+data_folder='QC2_results/data_GE21_foils_20230910'
 subfolder='/'
-part1_file='QC2LONG_PART1_GE21-FOIL-M8-G3-CERN-B10-0013_20231001_11-30'
-megger_file='QC2FAST_GE21-FOIL-M8-G3-CERN-B10-0013_20231001'
-all_channels_file='QC2_all_channels_monitor_20231002_06-29'
+part1_file=''
+part1_file='QC2LONG_PART1_GE21-FOIL-M3-G12-KR-B02-0018_20230910_13-06'
+megger_file='QC2FAST_GE21-FOIL-M3-G12-KR-B02-0018_20230910'
+all_channels_file=''
+all_channels_file='QC2_all_channels_monitor_20230911_10-25'
 include_IV_plot=True   #Set to False if you do not want to include the I-V plot in the pdf report and the /plots folder.
 "----------------------------------------------------------------------------"
 
@@ -83,35 +86,56 @@ for i in range(len(data_list_allCH)):
     current_list_part2.append(float(data_list_allCH[i][CH_number+9]))
     time_list_part2.append(float(data_list_allCH[i][0])/3600.0)
 
-plt.plot(time_list_part1,voltage_list_part1,'*')
-plt.xlabel('Time (s)', fontsize=18)
-plt.ylabel('Voltage (V)', fontsize=18)
-plt.xticks(fontsize=16); plt.yticks(fontsize=16);
-plt.savefig(data_folder+'/plots/'+part1_file+'-V-t.png',bbox_inches='tight')
+fig, axc1 = plt.subplots()
+fig.set_figheight(9)
+fig.set_figwidth(10)
+hep.cms.label(llabel="Preliminary", rlabel="CERN 904 Lab", fontsize=24)
+axc1.set_ylabel('Current [nA]', fontsize=24, color='blue', loc='top')
+axc1.set_xlabel('Time [s]', fontsize=24, loc='right')
+axc1.tick_params(axis="x", direction='in', labelsize=20, length=8)
+axc1.tick_params(axis="y", direction='in', labelsize=20, colors='blue', length=8)
+axc1.plot(time_list_part1,current_list_part1,'s-', color='blue')
+
+axv1= axc1.twinx()
+axv1.set_ylabel('Voltage [V]', fontsize=24, color='red', loc='top')
+axv1.tick_params(axis="y", direction='in', labelsize=20, length=8, colors='red')
+axv1.plot(time_list_part1,voltage_list_part1,'s-', color='r')
+plt.savefig(data_folder+'/plots/'+part1_file+'-VI-t.png',bbox_inches='tight')
 plt.close()
-plt.plot(time_list_part1,current_list_part1,'*')
-plt.xlabel('Time (s)', fontsize=18)
-plt.ylabel('Current (uA)', fontsize=18)
-plt.xticks(fontsize=16); plt.yticks(fontsize=16);
-plt.savefig(data_folder+'/plots/'+part1_file+'-I-t.png',bbox_inches='tight')
-plt.close()
-plt.errorbar(x=IV_voltage,y=IV_current,yerr=IV_current_error,fmt='*')
-plt.xlabel('Voltage (V)', fontsize=18)
-plt.ylabel('Current (nA)', fontsize=18)
-plt.xticks(fontsize=16); plt.yticks(fontsize=16);
+
+fig2, ax = plt.subplots()
+fig2.set_figheight(9)
+fig2.set_figwidth(10)
+hep.cms.label(llabel="Preliminary", rlabel="CERN 904 Lab", fontsize=24)
+ax.errorbar(x=IV_voltage,y=IV_current,yerr=IV_current_error,fmt='s', color='k')
+ax.set_yscale("log")
+ax.set_yticks([1, 7, 10])
+ax.tick_params(axis="x", direction='in', labelsize=20, length=8)
+ax.tick_params(axis="y", direction='in', labelsize=20, length=8)
+ax.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+ax.set_xlabel('Voltage [V]', fontsize=24, loc='right')
+ax.set_ylabel('Current [nA]', fontsize=24, loc='top')
+
+ax.axhline(y=7, color='r', linestyle='-')
 if(include_IV_plot):plt.savefig(data_folder+'/plots/'+part1_file+'-I-V.png',bbox_inches='tight')
 plt.close()
-plt.plot(time_list_part2,voltage_list_part2,'*')
-plt.xlabel('Time (hour)', fontsize=18)
-plt.ylabel('Voltage (V)', fontsize=18)
-plt.xticks(fontsize=16); plt.yticks(fontsize=16);
-plt.savefig(data_folder+'/plots/'+part1_file+'-V-t-long.png',bbox_inches='tight')
-plt.close()
-plt.plot(time_list_part2,current_list_part2,'*')
-plt.xlabel('Time (hour)', fontsize=18)
-plt.ylabel('Current (uA)', fontsize=18)
-plt.xticks(fontsize=16); plt.yticks(fontsize=16);
-plt.savefig(data_folder+'/plots/'+part1_file+'-I-t-long.png',bbox_inches='tight')
+
+fig3, axc2 = plt.subplots()
+fig3.set_figheight(9)
+fig3.set_figwidth(10)
+hep.cms.label(llabel="Preliminary", rlabel="CERN 904 Lab", fontsize=24)
+axc2.set_ylabel('Current [nA]', fontsize=24, color='blue', loc='top')
+axc2.set_xlabel('Time [hr]', fontsize=24, loc='right')
+axc2.tick_params(axis="x", direction='in', labelsize=20, length=8)
+axc2.tick_params(axis="y", direction='in', labelsize=20, colors='blue', length=8)
+axc2.plot(time_list_part2,current_list_part2,'s-', color='blue')
+
+axv2= axc2.twinx()
+axv2.set_ylabel('Voltage [V]', fontsize=24, color='r', loc='top')
+axv2.tick_params(axis="y", direction='in', labelsize=20, length=8, colors='red')
+axv2.plot(time_list_part2,voltage_list_part2,'s-', color='r')
+plt.savefig(data_folder+'/plots/'+part1_file+'-VI-t-long.png',bbox_inches='tight')
+
 
 ###################################Generate PDF report
 pdf = FPDF()
@@ -142,20 +166,20 @@ pdf.set_font('helvetica', 'B', 16)
 pdf.cell(300, 20, 'Acceptance test II -Part 1-')
 pdf.set_font('helvetica', '', 10)
 pdf.cell(300, 15, '',new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-pdf.image(data_folder+'/plots/'+part1_file+'-V-t.png',pdf.get_x(),pdf.get_y(),pdf.epw/3)
-pdf.image(data_folder+'/plots/'+part1_file+'-I-t.png',pdf.get_x()+pdf.epw/3,pdf.get_y(),pdf.epw/3)
-plt.xticks(fontsize=16); plt.yticks(fontsize=16);
-if(include_IV_plot):pdf.image(data_folder+'/plots/'+part1_file+'-I-V.png',pdf.get_x()+2*pdf.epw/3,pdf.get_y(),pdf.epw/3)
+pdf.image(data_folder+'/plots/'+part1_file+'-VI-t.png',pdf.get_x(),pdf.get_y(),pdf.epw*0.4)
+#plt.xticks(fontsize=16); plt.yticks(fontsize=16);
+if(include_IV_plot):pdf.image(data_folder+'/plots/'+part1_file+'-I-V.png',pdf.get_x()+pdf.epw*0.45,pdf.get_y(),pdf.epw*0.365)
+pdf.ln(62)
 pdf.set_font('helvetica', 'B', 16)
-pdf.cell(300, 100, 'Acceptance test II -Part 2-')
+pdf.cell(300, 20, 'Acceptance test II -Part 2-')
 pdf.set_font('helvetica', '', 10)
-pdf.cell(300, 55, '', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-pdf.image(data_folder+'/plots/'+part1_file+'-V-t-long.png',pdf.get_x(),pdf.get_y(),pdf.epw/3)
-pdf.image(data_folder+'/plots/'+part1_file+'-I-t-long.png',pdf.get_x()+pdf.epw/3,pdf.get_y(),pdf.epw/3)
+pdf.cell(300, 15, '', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+pdf.image(data_folder+'/plots/'+part1_file+'-VI-t-long.png',pdf.get_x(),pdf.get_y(),pdf.epw*0.4)
+pdf.ln(62)
 pdf.set_font('helvetica', 'B', 16)
-pdf.cell(300, 100, 'Notes')
+pdf.cell(300, 20, 'Notes')
 pdf.set_font('helvetica', '', 10)
-pdf.cell(300, 55, '', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+pdf.cell(300, 15, '', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 for row in notes_list:
      pdf.cell(300,pdf.font_size,row[0],new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 pdf.output(data_folder+'/pdf_reports/'+'QC2REPORT_'+part1_file[14:44]+'_'+datetime.now().strftime("%Y%m%d_%H-%M")+'.pdf')
